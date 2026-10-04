@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Send, X, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { trackEvent } from "@/lib/analytics";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const USER_KEY = "liam_user_id";
@@ -57,6 +58,8 @@ export function LiamWidget() {
     const text = input.trim();
     if (!text || busy) return;
     const next: Msg[] = [...messages, { role: "user", content: text }];
+    const isFirstMessage = messages.length === 1; // only the assistant greeting so far
+    trackEvent(isFirstMessage ? "liam_conversation_started" : "liam_message_sent", { path: pathname, message_count: next.filter((m) => m.role === "user").length });
     setMessages(next); setInput(""); setBusy(true);
     const assistant: Msg = { role: "assistant", content: "" };
     setMessages([...next, assistant]);
@@ -81,6 +84,7 @@ export function LiamWidget() {
             if (data.text) { content += data.text; setMessages([...next, { role: "assistant", content }]); }
             if (data.email_capture?.email && validEmail(data.email_capture.email)) {
               const withAnswer = [...next, { role: "assistant" as const, content }];
+              trackEvent("liam_email_captured", { path: pathname });
               await deliverPackage(data.email_capture.email, withAnswer);
             }
           } catch {}
@@ -93,7 +97,7 @@ export function LiamWidget() {
 
   return <>
     <button
-      onClick={() => setOpen((v) => !v)} aria-label={open ? "Close Liam" : "Ask Liam"}
+      onClick={() => { const next = !open; setOpen(next); trackEvent(next ? "liam_widget_opened" : "liam_widget_closed", { path: pathname }); }} aria-label={open ? "Close Liam" : "Ask Liam"}
       className="fixed bottom-5 right-5 z-[90] grid h-[62px] w-[62px] place-items-center rounded-full border border-[#777]/70 bg-[#FFE500]/95 shadow-[0_0_0_1px_rgba(255,255,255,.08),0_0_18px_rgba(255,229,0,.28),0_0_42px_rgba(255,229,0,.12)] backdrop-blur-xl transition-all hover:scale-[1.04] hover:shadow-[0_0_0_1px_rgba(255,255,255,.12),0_0_26px_rgba(255,229,0,.42),0_0_58px_rgba(255,229,0,.16)]"
     >
       <span className="absolute inset-[5px] rounded-full border border-black/15 bg-gradient-to-br from-white/35 via-transparent to-black/10" />

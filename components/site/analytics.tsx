@@ -3,9 +3,11 @@
 import Script from "next/script";
 
 export function SiteAnalytics() {
-  const enabled = process.env.NEXT_PUBLIC_ENABLE_SITE_ANALYTICS === "true";
-
-  if (!enabled) {
+  // Skip in local dev unless explicitly opted in
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.NEXT_PUBLIC_ENABLE_SITE_ANALYTICS !== "true"
+  ) {
     return null;
   }
 

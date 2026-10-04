@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { PixelButton } from "@/components/site/pixel-button";
 import { useContact } from "@/components/site/contact-provider";
+import { trackEvent } from "@/lib/analytics";
 
 interface PageHeroProps {
   index: string;
@@ -151,19 +152,19 @@ export function PageHero({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
               {primaryCta && (
                 primaryCta.openModal || primaryCta.href === "/contact" ? (
-                  <PixelButton variant="yellow" onClick={openContact}>
+                  <PixelButton variant="yellow" onClick={() => { trackEvent("cta_clicked", { label: primaryCta.label, location: "hero_primary" }); openContact(); }}>
                     {primaryCta.label}
                     <ArrowUpRight className="w-4 h-4" />
                   </PixelButton>
                 ) : (
-                  <PixelButton variant="yellow" href={primaryCta.href || "#"}>
+                  <PixelButton variant="yellow" href={primaryCta.href || "#"} onClick={() => trackEvent("cta_clicked", { label: primaryCta.label, location: "hero_primary" })}>
                     {primaryCta.label}
                     <ArrowUpRight className="w-4 h-4" />
                   </PixelButton>
                 )
               )}
               {secondaryCta && (
-                <PixelButton variant="grey" href={secondaryCta.href}>
+                <PixelButton variant="grey" href={secondaryCta.href} onClick={() => trackEvent("cta_clicked", { label: secondaryCta.label, location: "hero_secondary" })}>
                   {secondaryCta.label}
                   <span className="font-mono opacity-70">&rarr;</span>
                 </PixelButton>

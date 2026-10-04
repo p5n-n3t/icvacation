@@ -5,6 +5,7 @@ import { PixelButton } from "@/components/site/pixel-button";
 import { BackgroundBoxes } from "@/components/site/background-boxes";
 import { Mascot } from "@/components/site/mascot";
 import { useContact } from "@/components/site/contact-provider";
+import { trackEvent } from "@/lib/analytics";
 
 interface PageCtaProps {
   eyebrow?: string;
@@ -69,12 +70,12 @@ export function PageCta({
             )}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               {primary?.href ? (
-                <PixelButton variant="yellow" href={primary.href}>
+                <PixelButton variant="yellow" href={primary.href} onClick={() => trackEvent("cta_clicked", { label: primary?.label ?? "", location: "page_cta" })}>
                   {primary.label}
                   <ArrowUpRight className="w-4 h-4" />
                 </PixelButton>
               ) : (
-                <PixelButton variant="yellow" onClick={openContact}>
+                <PixelButton variant="yellow" onClick={() => { trackEvent("cta_clicked", { label: primary?.label ?? "Plan my trip", location: "page_cta" }); openContact(); }}>
                   {primary?.label ?? "Plan my trip"}
                   <ArrowUpRight className="w-4 h-4" />
                 </PixelButton>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { trackEvent } from "@/lib/analytics";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,10 @@ export function ContactModal({
   );
   const [errorMsg, setErrorMsg] = useState<string>("");
 
+  useEffect(() => {
+    if (open) trackEvent("contact_modal_opened");
+  }, [open]);
+
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((s) => ({ ...s, [key]: value }));
   }
@@ -62,6 +67,11 @@ export function ContactModal({
     e.preventDefault();
     setStatus("sending");
     setErrorMsg("");
+    trackEvent("contact_form_submitted", {
+      trip_style: state.tripStyle || "not_set",
+      budget: state.budget || "not_set",
+      travelers: state.travelers || "not_set",
+    });
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -72,12 +82,18 @@ export function ContactModal({
       if (!res.ok || !json.ok) {
         setStatus("error");
         setErrorMsg(json.error || "Something went wrong. Please try again.");
+        trackEvent("contact_form_error");
         return;
       }
       setStatus("ok");
+      trackEvent("contact_form_success", {
+        trip_style: state.tripStyle || "not_set",
+        budget: state.budget || "not_set",
+      });
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Network error");
+      trackEvent("contact_form_error");
     }
   }
 
