@@ -1,0 +1,13 @@
+# Cloudflare Workers — not part of the Next.js app
+cloudflare/
+
+# Agent/IDE session files
+.claude/
+.codex/
+
+# Development scripts and raw data
+scripts/
+output/
+
+# Misc
+*.log
